@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vosynverse - Listen</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1DB954;
+            --dark-bg: #121212;
+            --light-bg: #181818;
+            --lighter-bg: #282828;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B3B3B3;
+            --navbar-height: 64px;
+            --player-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: var(--player-height);
+        }
+
+        /* Navigation Bar */
+        .navbar {
+             background-color: #000; /* solid black */
+    height: var(--navbar-height);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+    font-weight: bold;
+    color: #ff4fb6; /* match the vosyn pink */
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        .nav-links a.active {
+    border-bottom: 2px solid #ff4fb6;
+}
+
+        .user-profile {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--lighter-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: var(--navbar-height);
+            padding: 24px 32px;
+        }
+
+        .greeting {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin: 24px 0 16px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .content-card {
+         background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-card:hover {
+            background-color: var(--lighter-bg);
+            transform: translateY(-5px);
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background-color: #333; /* Fallback color */
+        }
+
+        .play-button {
+            position: absolute;
+            right: 20px;
+            bottom: 70px;
+            background-color: var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-card:hover .play-button {
+            opacity: 1;
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Audio Player */
+        .audio-player {
+               background-color: #101010;
+    height: 64px;
+    padding: 0 16px;
+    border-top: 1px solid #222;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .player-album {
+           display: none; /* Fallback color */
+        }
+
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-title {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-artist {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .progress-container {
+            flex: 3;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+            width: 0%;
+        }
+
+        .time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: 20px;
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.2s;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-button:hover {
+            color: var(--primary-color);
+        }
+
+        .play-pause {
+            background-color: var(--primary-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-banner {
+    margin-top: var(--navbar-height);
+    background: linear-gradient(135deg, #6e00ff, #ff4fb6);
+    padding: 60px 20px;
+    text-align: center;
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-text h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hero-text h1 span {
+    color: #ff00d9; /* highlight text */
+}
+
+.hero-text p {
+    font-size: 16px;
+    margin-bottom: 24px;
+    color: #e0e0e0;
+}
+
+.cta-button {
+    background-color: #f903c4;
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    font-size: 15px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #222;
+}
+
+
+        /* Recently Played Section */
+        .recently-played {
+            margin-top: 40px;
+        }
+
+        /* Made For You Section */
+        .made-for-you {
+            margin-top: 40px;
+        }
+
+        /* Categories Section */
+        .categories {
+            margin-top: 40px;
+        }
+.search-container {
+    flex: 1;
+    margin: 0 32px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    background-color: #1f1f1f;
+    color: white;
+    font-size: 14px;
+    outline: none;
+}
+/* Made For You - Bigger Cards */
+.made-for-you .content-card {
+    padding: 20px;
+    min-height: 280px;
+}
+
+.made-for-you .card-image {
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.categories .content-card:nth-child(1) {
+    background-color: #3f3f3f;
+}
+
+.categories .content-card:nth-child(2) {
+    background-color: #1e3a8a; /* Blue */
+}
+
+.categories .content-card:nth-child(3) {
+    background-color: #166534; /* Green */
+}
+
+.categories .content-card:nth-child(4) {
+    background-color: #7c2d12; /* Deep orange */
+}
+
+.categories .content-card:nth-child(5) {
+    background-color: #4c1d95; /* Purple */
+}
+
+.categories .content-card:nth-child(6) {
+    background-color: #a21caf; /* Pink */
+}
+
+.categories .content-card:hover {
+    transform: translateY(-5px);
+    opacity: 0.95;
+}
+.categories .content-card:nth-child(1) { background-color: #4b5563; }  /* Mystery - Gray */
+.categories .content-card:nth-child(2) { background-color: #1e40af; }  /* Self-Help - Blue */
+.categories .content-card:nth-child(3) { background-color: #065f46; }  /* News - Teal */
+.categories .content-card:nth-child(4) { background-color: #7c2d12; }  /* Sci-Fi - Orange */
+.categories .content-card:nth-child(5) { background-color: #4c1d95; }  /* Business - Purple */
+.categories .content-card:nth-child(6) { background-color: #be185d; }  /* Comedy - Pink */
+.categories .content-card:nth-child(7) { background-color: #b91c1c; }  /* Romance - Red */
+.categories .content-card:nth-child(8) { background-color: #78350f; }  /* History - Brown */
+.categories .content-card:nth-child(9) { background-color: #4338ca; }  /* Fantasy - Indigo */
+.categories .content-card:nth-child(10){ background-color: #047857; }  /* Health - Green */
+
+.categories .content-card {
+    color: #fff;
+    padding: 20px;
+    border-radius: 14px;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.categories .content-card:hover {
+    transform: translateY(-5px);
+    opacity: 0.95;
+}
+
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .navbar {
+                padding: 0 16px;
+            }
+            
+            .nav-links {
+                gap: 16px;
+            }
+
+            .progress-container {
+                display: none;
+            }
+
+            .player-album {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">VOSYNVERSE</div>
+         <div class="search-container">
+    <input type="text" class="search-input" placeholder="Search for audiobooks, podcasts, or authors...">
+</div> 
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#" class="active">Listen</a>
+            <a href="#">Explore</a>
+            <a href="#">Library</a>
+        </div>
+        <div class="user-profile">
+            <i class="fas fa-user"></i>
+        </div>
+       
+
+    </nav>
+    <!-- Hero Box -->
+<section class="hero-banner">
+    <div class="hero-text">
+        <h1>Listen to your <span>favorite </span> stories</h1>
+        <p>Dive into a world of audiobooks and podcasts curated just for you.</p>
+        <button class="cta-button">Start Listening</button>
+    </div>
+</section>
+
+
+    <!-- Main Content -->
+-player    <div class="main-content">
+        <h1 class="greeting">Good afternoon</h1>
+        
+        <!-- Recently Played Section -->
+        <div class="recently-played">
+            <h2 class="section-title">Recently played</h2>
+            <div class="content-grid">
+                <div class="content-card" onclick="playAudio('The Silent Patient', 'Alex Michaelides', 'https://images-na.ssl-images-amazon.com/images/I/71x+ghk44uL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/71x+ghk44uL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Audiobook">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">The Silent Patient</h3>
+                    <p class="card-description">A psychological thriller about a woman who shoots her husband and then stops speaking</p>
+                </div>
+                <div class="content-card" onclick="playAudio('Atomic Habits', 'James Clear', 'https://images-na.ssl-images-amazon.com/images/I/81wgcld4wxL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81wgcld4wxL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Audiobook">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Atomic Habits</h3>
+                    <p class="card-description">Tiny changes, remarkable results - build good habits and break bad ones</p>
+                </div>
+                <div class="content-card" onclick="playAudio('The Daily', 'New York Times', 'https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/88/18/59/881859e5-f344-8ef1-9a59-6e9b7a1d5a3a/mza_8233931357531545746.jpg/626x0w.webp', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3')">
+                    <img src="https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/88/18/59/881859e5-f344-8ef1-9a59-6e9b7a1d5a3a/mza_8233931357531545746.jpg/626x0w.webp" class="card-image" alt="Podcast">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">The Daily</h3>
+                    <p class="card-description">The biggest stories of our time, told by the best journalists</p>
+                </div>
+                <div class="content-card" onclick="playAudio('Dune', 'Frank Herbert', 'https://images-na.ssl-images-amazon.com/images/I/81ym3QUd3KL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81ym3QUd3KL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Audiobook">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Dune</h3>
+                    <p class="card-description">Frank Herbert's epic science fiction masterpiece</p>
+                </div>
+                <div class="content-card" onclick="playAudio('Serial', 'Sarah Koenig', 'https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/72/36/a9/7236a9ab-0c3b-9f4e-0c5d-2e5c4b1a0c6c/mza_12168793512556367093.jpg/626x0w.webp', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3')">
+                    <img src="https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/72/36/a9/7236a9ab-0c3b-9f4e-0c5d-2e5c4b1a0c6c/mza_12168793512556367093.jpg/626x0w.webp" class="card-image" alt="Podcast">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Serial</h3>
+                    <p class="card-description">Investigative journalism podcast telling one story over multiple episodes</p>
+                </div>
+                <div class="content-card" onclick="playAudio('Becoming', 'Michelle Obama', 'https://images-na.ssl-images-amazon.com/images/I/81h2gWPTYJL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81h2gWPTYJL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Audiobook">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Becoming</h3>
+                    <p class="card-description">Michelle Obama's memoir of her journey from Chicago to the White House</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Made For You Section -->
+        <div class="made-for-you">
+            <h2 class="section-title">Made for you</h2>
+            <div class="content-grid">
+                <div class="content-card" onclick="playAudio('Your Top Picks', 'Vosynverse', 'https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Recommendation">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Your Top Picks</h3>
+                    <p class="card-description">Audiobooks and podcasts we think you'll love</p>
+                </div>
+                <div class="content-card" onclick="playAudio('Daily Mix 1', 'Vosynverse', 'https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Recommendation">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Daily Mix 1</h3>
+                    <p class="card-description">Mystery and thriller audiobooks you've been enjoying</p>
+                </div>
+                <div class="content-card" onclick="playAudio('Daily Mix 2', 'Vosynverse', 'https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Recommendation">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Daily Mix 2</h3>
+                    <p class="card-description">News and current affairs podcasts</p>
+                </div>
+                <div class="content-card" onclick="playAudio('Discover Weekly', 'Vosynverse', 'https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3')">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81UQBpG1uqL._AC_UL600_SR600,600_.jpg" class="card-image" alt="Recommendation">
+                    <div class="play-button">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <h3 class="card-title">Discover Weekly</h3>
+                    <p class="card-description">Your weekly mixtape of fresh podcasts and audiobooks</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Section -->
+        <!-- Categories Section -->
+<div class="categories">
+    <h2 class="section-title">Browse by Category</h2>
+    <div class="content-grid category-grid">
+        <div class="content-card"> <!-- 1 -->
+            <i class="fas fa-user-secret category-icon"></i>
+            <h3 class="card-title">Mystery</h3>
+            <p class="card-description">Unravel thrilling mysteries</p>
+        </div>
+        <div class="content-card"> <!-- 2 -->
+            <i class="fas fa-brain category-icon"></i>
+            <h3 class="card-title">Self-Help</h3>
+            <p class="card-description">Improve your life</p>
+        </div>
+        <div class="content-card"> <!-- 3 -->
+            <i class="fas fa-newspaper category-icon"></i>
+            <h3 class="card-title">News</h3>
+            <p class="card-description">Stay informed</p>
+        </div>
+        <div class="content-card"> <!-- 4 -->
+            <i class="fas fa-rocket category-icon"></i>
+            <h3 class="card-title">Science Fiction</h3>
+            <p class="card-description">Explore new worlds</p>
+        </div>
+        <div class="content-card"> <!-- 5 -->
+            <i class="fas fa-briefcase category-icon"></i>
+            <h3 class="card-title">Business</h3>
+            <p class="card-description">Grow professionally</p>
+        </div>
+        <div class="content-card"> <!-- 6 -->
+            <i class="fas fa-laugh category-icon"></i>
+            <h3 class="card-title">Comedy</h3>
+            <p class="card-description">Laugh out loud</p>
+        </div>
+        <div class="content-card"> <!-- 7 -->
+            <i class="fas fa-heart category-icon"></i>
+            <h3 class="card-title">Romance</h3>
+            <p class="card-description">Fall in love with stories</p>
+        </div>
+        <div class="content-card"> <!-- 8 -->
+            <i class="fas fa-landmark category-icon"></i>
+            <h3 class="card-title">History</h3>
+            <p class="card-description">Learn from the past</p>
+        </div>
+        <div class="content-card"> <!-- 9 -->
+            <i class="fas fa-hat-wizard category-icon"></i>
+            <h3 class="card-title">Fantasy</h3>
+            <p class="card-description">Magical and epic journeys</p>
+        </div>
+        <div class="content-card"> <!-- 10 -->
+            <i class="fas fa-heart-pulse category-icon"></i>
+            <h3 class="card-title">Health & Wellness</h3>
+            <p class="card-description">Mind, body and soul</p>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Audio Player -->
+    <div class="audio-player" id="audioPlayer" style="display: none;">
+        <img src="" class="player-album" id="playerAlbum">
+        <div class="player-controls">
+            <div class="player-info">
+                <div class="player-title" id="playerTitle">No track selected</div>
+                <div class="player-artist" id="playerArtist">Vosynverse</div>
+            </div>
+            <div class="progress-container">
+                <span class="time" id="currentTime">0:00</span>
+                <div class="progress-bar" onclick="seekAudio(event)">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <span class="time" id="duration">0:00</span>
+            </div>
+            <div class="control-buttons">
+                <button class="control-button">
+                    <i class="fas fa-random"></i>
+                </button>
+                <button class="control-button" onclick="skipBackward()">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="control-button play-pause" onclick="togglePlay()" id="playPauseBtn">
+                    <i class="fas fa-play" id="playPauseIcon"></i>
+                </button>
+                <button class="control-button" onclick="skipForward()">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+                <button class="control-button">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioElement"></audio>
+
+    <script>
+        const audioElement = document.getElementById('audioElement');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playerTitle = document.getElementById('playerTitle');
+        const playerArtist = document.getElementById('playerArtist');
+        const playerAlbum = document.getElementById('playerAlbum');
+        const progressBar = document.getElementById('progressBar');
+        const currentTime = document.getElementById('currentTime');
+        const duration = document.getElementById('duration');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+
+        let isPlaying = false;
+
+        function playAudio(title, artist, albumArt, audioSrc) {
+            playerTitle.textContent = title;
+            playerArtist.textContent = artist;
+            playerAlbum.src = albumArt;
+            
+            audioElement.src = audioSrc;
+            audioPlayer.style.display = 'flex';
+            
+            audioElement.play().then(() => {
+                isPlaying = true;
+                playPauseIcon.classList.remove('fa-play');
+                playPauseIcon.classList.add('fa-pause');
+            }).catch(error => {
+                console.error("Playback failed:", error);
+            });
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                audioElement.pause();
+                playPauseIcon.classList.remove('fa-pause');
+                playPauseIcon.classList.add('fa-play');
+            } else {
+                audioElement.play();
+                playPauseIcon.classList.remove('fa-play');
+                playPauseIcon.classList.add('fa-pause');
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function skipForward() {
+            audioElement.currentTime += 15;
+        }
+
+        function skipBackward() {
+            audioElement.currentTime -= 15;
+        }
+
+        function seekAudio(event) {
+            const progressBar = event.currentTarget;
+            const clickPosition = event.clientX - progressBar.getBoundingClientRect().left;
+            const progressBarWidth = progressBar.clientWidth;
+            const seekTime = (clickPosition / progressBarWidth) * audioElement.duration;
+            audioElement.currentTime = seekTime;
+        }
+
+        // Update progress bar
+        audioElement.addEventListener('timeupdate', () => {
+            const currentPercentage = (audioElement.currentTime / audioElement.duration) * 100;
+            progressBar.style.width = currentPercentage + '%';
+            
+            // Update time display
+            currentTime.textContent = formatTime(audioElement.currentTime);
+            if (!isNaN(audioElement.duration)) {
+                duration.textContent = formatTime(audioElement.duration);
+            }
+        });
+
+        // When audio ends
+        audioElement.addEventListener('ended', () => {
+            isPlaying = false;
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+            progressBar.style.width = '0%';
+            currentTime.textContent = '0:00';
+        });
+
+        // Format time (seconds to MM:SS)
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+async function loadAudiobooks() {
+    const container = document.querySelector('.recently-played .content-grid');
+    container.innerHTML = '<p style="color:#ccc;">Loading audiobooks...</p>';
+
+    try {
+        const response = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://librivox.org/api/feed/audiobooks?format=json&limit=8'));
+        const result = await response.json();
+        const data = JSON.parse(result.contents);
+
+        container.innerHTML = ''; // Clear loading message
+
+        data.books.forEach(book => {
+            const title = book.title;
+            const author = book.authors[0]?.first_name + ' ' + book.authors[0]?.last_name;
+            const image = book.url_librivox + '/cover';
+            const audioURL = book.url_rss || book.url_zip_file || '#';
+
+            const card = document.createElement('div');
+            card.className = 'content-card';
+            card.onclick = () => playAudio(title, author, image, audioURL);
+
+            card.innerHTML = `
+                <img src="${image}" class="card-image" alt="Audiobook cover">
+                <div class="play-button"><i class="fas fa-play"></i></div>
+                <h3 class="card-title">${title}</h3>
+                <p class="card-description">${author}</p>
+            `;
+
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error('Error fetching audiobooks:', err);
+        container.innerHTML = '<p style="color:red;">Failed to load audiobooks</p>';
+    }
+}
+
+loadAudiobooks();           w
+
+            // Initialize with a sample track (optional)
+        // playAudio('Sample Track', 'Sample Artist', 'https://via.placeholder.com/150', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+    </script>
+</body>
+</html>
